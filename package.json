@@ -2,6 +2,10 @@
   "name": "lowkey",
   "version": "0.1.0",
   "description": "Offline, local-first AI chat app thats hella fast.",
+  "author": {
+    "name": "askpext",
+    "email": "askpext@users.noreply.github.com"
+  },
   "main": "dist/main/main.js",
   "private": true,
   "scripts": {
