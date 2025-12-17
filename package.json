@@ -1,0 +1,26 @@
+{
+  "name": "lowkey",
+  "version": "0.1.0",
+  "description": "Offline, local-first AI chat app thats hella fast.",
+  "main": "dist/main/main.js",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "watch": "tsc -w",
+    "electron": "electron .",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && concurrently \"npm run watch\" \"npm run electron\"",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:all": "npm run build && electron-builder --win --linux"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^30.5.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}

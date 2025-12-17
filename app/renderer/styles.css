@@ -1,0 +1,64 @@
+body {
+  margin: 0;
+  background: #0f0f0f;
+  color: #e5e5e5;
+  font-family: system-ui, sans-serif;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#chat {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+#input-row {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid #222;
+  gap: 8px;
+}
+
+textarea {
+  flex: 1;
+  resize: none;
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+button {
+  background: #2563eb;
+  border: none;
+  color: white;
+  padding: 0 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+.status {
+  padding: 12px;
+  font-size: 13px;
+  color: #aaa;
+  border-bottom: 1px solid #222;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.status strong {
+  color: #fff;
+}
+
+.hidden {
+  display: none;
+}
