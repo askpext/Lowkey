@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="public/placeholder-logo.svg" alt="Lowkey Logo" width="120" height="120" />
-  
+  <img width="120" height="120" alt="Group 3" src="https://github.com/user-attachments/assets/61794daa-8419-431d-a571-b90cd8d06bc2" />
+
   # Lowkey
   
   **Your AI assistant. Private, fast, and completely offline.**
@@ -39,7 +39,7 @@ All processing happens on your device. Your data, your control. No cloud servers
 Local inference means zero latency. Get instant responses without waiting for API calls or network delays.
 
 ### 💻 **Cross-Platform**
-Native apps for macOS, Windows, and Linux. Consistent experience across all your devices.
+Native apps for Windows, and Linux. Consistent experience across all your devices.
 
 ### 🎨 **Beautiful Design**
 Clean, minimal interface inspired by Apple's design language. Dark mode support included.
@@ -55,7 +55,7 @@ Tailor the experience to your workflow. Custom prompts, themes, and keyboard sho
 ## Screenshots
 
 <div align="center">
-  <img src="public/modern-ai-chat-interface-with-dark-sidebar-and-con.jpg" alt="Lowkey Interface" width="800" />
+  <img alt="ChatGPT Image Dec 18, 2025, 01_50_52 AM" src="https://github.com/user-attachments/assets/0790313f-3c13-4d7f-bb39-9b0f0b29352e" width="800" />
   <p><em>Clean, minimal chat interface with dark sidebar</em></p>
 </div>
 
