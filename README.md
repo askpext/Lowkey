@@ -16,7 +16,7 @@
 
 ## Overview
 
-**Lowkey** is a privacy-first AI assistant that runs entirely on your device. No internet required, no data sent to the cloud—just pure, local AI power at your fingertips. Built with Next.js and designed with a minimal, Apple-inspired aesthetic, Lowkey brings enterprise-grade AI capabilities to your desktop without compromising your privacy.
+**Lowkey** is a privacy-first AI assistant that runs entirely on your device. No internet required, no data sent to the cloud—just pure, local AI power at your fingertips. Built with latest tech and designed with a minimal, Apple-inspired aesthetic, Lowkey brings enterprise-grade AI capabilities to your desktop without compromising your privacy.
 
 ### Why Lowkey?
 
