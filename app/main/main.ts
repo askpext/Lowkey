@@ -4,6 +4,7 @@ import os from "os";
 import { registerIpc } from "./ipc";
 import { startLlama } from "./llama/runner";
 import { waitForLlama } from "./llama/health";
+import { modelExists } from "./model/provision";
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -34,12 +35,13 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
 
-  // Start llama and wait for it to be ready
-  startLlama();
-  waitForLlama(mainWindow);
-
   // Register IPC handlers with window reference
   registerIpc(mainWindow);
+
+  if (modelExists()) {
+    startLlama();
+    waitForLlama(mainWindow);
+  }
 }
 
 app.whenReady().then(() => {

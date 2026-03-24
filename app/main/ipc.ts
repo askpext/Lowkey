@@ -1,6 +1,10 @@
 import { ipcMain, BrowserWindow, app } from "electron";
 import fs from "fs/promises";
 import path from "path";
+import http from "http";
+import { modelExists, downloadModel } from "./model/provision";
+import { startLlama } from "./llama/runner";
+import { waitForLlama } from "./llama/health";
 
 /* ==================== SYSTEM PROMPT ==================== */
 
@@ -37,9 +41,47 @@ async function ensureChatsDir() {
 
 let currentController: AbortController | null = null;
 
+function checkLlamaReady(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const req = http.get("http://127.0.0.1:11435/health", (res) => {
+      resolve(res.statusCode === 200);
+      req.destroy();
+    });
+
+    req.setTimeout(1000, () => {
+      req.destroy();
+      resolve(false);
+    });
+
+    req.on("error", () => resolve(false));
+  });
+}
+
 /* ==================== IPC REGISTRATION ==================== */
 
 export function registerIpc(mainWindow: BrowserWindow) {
+  ipcMain.handle("model-status", async () => {
+    const downloaded = modelExists();
+    return {
+      downloaded,
+      ready: downloaded ? await checkLlamaReady() : false
+    };
+  });
+
+  ipcMain.handle("download-model", async () => {
+    await downloadModel((percent) => {
+      mainWindow.webContents.send("download-progress", percent);
+    });
+  });
+
+  ipcMain.handle("start-llama", async () => {
+    if (!modelExists()) {
+      throw new Error("Model is not downloaded");
+    }
+
+    startLlama();
+    waitForLlama(mainWindow);
+  });
 
   /* -------- SEND MESSAGE (STREAMING) -------- */
 
