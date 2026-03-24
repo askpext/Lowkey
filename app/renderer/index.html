@@ -146,6 +146,11 @@
       border-color: var(--border);
     }
 
+    .status-badge.error {
+      color: #ffb4b4;
+      border-color: #4a1f1f;
+    }
+
     .dot { 
       width: 6px; 
       height: 6px; 
@@ -163,6 +168,65 @@
       max-width: 900px;
       margin: 0 auto;
       width: 100%;
+    }
+
+    .setup-card {
+      margin: auto;
+      max-width: 520px;
+      width: calc(100% - 3rem);
+      padding: 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      display: none;
+      flex-direction: column;
+      gap: 0.9rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .setup-card.visible {
+      display: flex;
+    }
+
+    .setup-card h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .setup-card p {
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .setup-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .setup-btn {
+      background: var(--primary);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .setup-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #setup-progress, #setup-error {
+      min-height: 1.2rem;
+      font-size: 0.92rem;
+    }
+
+    #setup-error {
+      color: #ff9b9b;
     }
 
     .message {
@@ -299,8 +363,8 @@
     <div id="chat-list"></div>
   </div>
 
-  <div id="main">
-    <header>
+    <div id="main">
+      <header>
       <div style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
         <i class="ri-terminal-box-line"></i> Lowkey
       </div>
@@ -308,11 +372,20 @@
         <div class="dot"></div>
         <span id="status-text">Starting Model...</span>
       </div>
-    </header>
+      </header>
 
-    <div id="chat-container"></div>
+      <div id="chat-container"></div>
+      <div id="setup-card" class="setup-card">
+        <h2>Model setup required</h2>
+        <p>Lowkey needs to download the local Qwen GGUF model once on this machine before chat can start.</p>
+        <div class="setup-actions">
+          <button id="download-model-btn" class="setup-btn">Download model</button>
+        </div>
+        <div id="setup-progress"></div>
+        <div id="setup-error"></div>
+      </div>
 
-    <div class="input-wrapper">
+      <div class="input-wrapper">
       <div class="input-box">
         <textarea id="input" rows="1" placeholder="Ask anything..." disabled></textarea>
         <button id="stop-btn"><i class="ri-stop-circle-line"></i></button>
@@ -340,12 +413,68 @@
     const statusText = document.getElementById("status-text");
     const chatList = document.getElementById("chat-list");
     const newChatBtn = document.getElementById("new-chat-btn");
+    const setupCard = document.getElementById("setup-card");
+    const downloadModelBtn = document.getElementById("download-model-btn");
+    const setupProgress = document.getElementById("setup-progress");
+    const setupError = document.getElementById("setup-error");
 
     let currentChatId = Date.now().toString();
     let currentMessages = [];
     let isGenerating = false;
     let currentAiBubble = null;
     let currentMdBuffer = "";
+    let chatsLoaded = false;
+
+    function setStatus(text, mode = "default") {
+      statusText.textContent = text;
+      statusBadge.classList.remove("ready", "error");
+      if (mode === "ready" || mode === "error") {
+        statusBadge.classList.add(mode);
+      }
+    }
+
+    function setModelSetupVisible(visible) {
+      setupCard.classList.toggle("visible", visible);
+      chatContainer.style.display = visible ? "none" : "flex";
+    }
+
+    function enterReadyState() {
+      setStatus("Model Ready", "ready");
+      input.disabled = false;
+      sendBtn.disabled = false;
+      if (!chatsLoaded) {
+        loadChatHistory();
+        chatsLoaded = true;
+      }
+      setModelSetupVisible(false);
+      input.focus();
+    }
+
+    function showModelSetup() {
+      setStatus("Model not installed");
+      setModelSetupVisible(true);
+      input.disabled = true;
+      sendBtn.disabled = true;
+    }
+
+    async function ensureModelReady() {
+      const status = await window.api.modelStatus();
+      if (status.ready) {
+        enterReadyState();
+        return;
+      }
+
+      if (!status.downloaded) {
+        showModelSetup();
+        return;
+      }
+
+      setStatus("Starting Model...");
+      setModelSetupVisible(false);
+      input.disabled = true;
+      sendBtn.disabled = true;
+      await window.api.startLlama();
+    }
 
     // Auto resize textarea
     input.addEventListener('input', function() {
@@ -416,12 +545,11 @@
     }
 
     window.api.onReady(() => {
-      statusBadge.classList.add("ready");
-      statusText.textContent = "Model Ready";
-      input.disabled = false;
-      sendBtn.disabled = false;
-      input.focus();
-      loadChatHistory();
+      enterReadyState();
+    });
+
+    window.api.onProgress((percent) => {
+      setupProgress.textContent = `Downloading model: ${percent}%`;
     });
 
     function appendMessage(role, text = "", save = true) {
@@ -528,6 +656,33 @@
         e.preventDefault();
         sendMessage();
       }
+    });
+
+    downloadModelBtn.addEventListener("click", async () => {
+      downloadModelBtn.disabled = true;
+      setupError.textContent = "";
+      setupProgress.textContent = "Preparing download...";
+      setStatus("Downloading model...");
+
+      try {
+        await window.api.downloadModel();
+        setupProgress.textContent = "Download complete. Starting model...";
+        setStatus("Starting Model...");
+        await window.api.startLlama();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setupError.textContent = `Download failed: ${message}`;
+        setupProgress.textContent = "";
+        setStatus("Setup failed", "error");
+        downloadModelBtn.disabled = false;
+      }
+    });
+
+    ensureModelReady().catch(err => {
+      const message = err instanceof Error ? err.message : String(err);
+      showModelSetup();
+      setupError.textContent = `Startup failed: ${message}`;
+      setStatus("Setup failed", "error");
     });
   </script>
 </body>

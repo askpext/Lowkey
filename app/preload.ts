@@ -1,6 +1,18 @@
 import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("api", {
+  modelStatus: () =>
+    ipcRenderer.invoke("model-status"),
+
+  downloadModel: () =>
+    ipcRenderer.invoke("download-model"),
+
+  startLlama: () =>
+    ipcRenderer.invoke("start-llama"),
+
+  onProgress: (cb: (percent: number) => void) =>
+    ipcRenderer.on("download-progress", (_event, percent) => cb(percent)),
+
   /* ================= EXISTING ================= */
 
   sendMessage: (text: string) =>
